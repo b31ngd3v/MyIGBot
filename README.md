@@ -36,14 +36,14 @@ And of course MyIGBot itself is open source with a [public repository](https://g
 Install MyIGBot from PyPi
 
 ```sh
-$ pip install MyIGBot
+$ pip install myigbot
 ```
 ### Usage
 
 Here is how to use MyIGBot
 
 ```sh
-from MyIGBot import MyIGBot
+from myigbot import MyIGBot
 
 bot = MyIGBot('USERNAME', 'PASSWORD')  # Login Information (if you're account has 2 Factor Auth. The Bot Will Ask You The Code.)
 
