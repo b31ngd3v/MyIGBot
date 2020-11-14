@@ -1,4 +1,4 @@
-from MyIGBot import MyIGBot
+from myigbot import MyIGBot
 
 bot = MyIGBot('YOUR USERNAME', 'YOUR PASSWORD')
 
