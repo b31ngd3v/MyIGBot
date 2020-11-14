@@ -1,6 +1,6 @@
 from MyIGBot import MyIGBot
 
-bot = MyIGBot('bjvj87', 'qwertypad09')
+bot = MyIGBot('YOUR USERNAME', 'YOUR PASSWORD')
 
 # like post
 a=bot.like('URL')
