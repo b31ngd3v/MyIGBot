@@ -182,11 +182,10 @@ class MyIGBot:
             self.mcsrf_token = cookie_jar['csrftoken']
 
             try:
-                if json_data["authenticated"]:
+                if json_data["logged_in_user"]:
                     pass
                 else:
-                    print(bcolors.FAIL+"[✗] Login Failed!"+bcolors.ENDC, login_response.text)
-                    quit()
+                    pass
             except KeyError:
                 try:
                     if json_data["two_factor_required"]:
@@ -225,7 +224,7 @@ class MyIGBot:
                             quit()
 
                 except KeyError:
-                    print(bcolors.FAIL+'[✗] Login Failed! Try Again After Few Minutes!'+bcolors.ENDC)
+                    print(bcolors.FAIL+"[✗] Login Failed!"+bcolors.ENDC)
                     quit()
 
             self.msessionid = login_response.headers['Set-Cookie'].split('sessionid=')[1].split(';')[0]                
