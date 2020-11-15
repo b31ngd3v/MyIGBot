@@ -60,11 +60,11 @@ c=bot.unlike('URL')
 print(c)
 
 # comment on post
-d=bot.comment('URL')
+d=bot.comment('URL', comment_text='YOUR COMMENT')
 print(d)
 
 # comment on the recent post of user
-e=bot.comment_recent('USERNAME')
+e=bot.comment_recent('USERNAME', comment_text='YOUR COMMENT')
 print(e)
 
 # follow the user
