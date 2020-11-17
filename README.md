@@ -4,6 +4,7 @@
 
 MyIGBot is a Instagram Private API to like, follow, comment, view & intaract with stories and upload post & stories.
 
+<p>
 <img src='https://raw.githubusercontent.com/b31ngD3v/MyIGBot/main/Screenshot_20201117-112159.png' alt='' height='800' />
 
   - Easy to use
@@ -20,6 +21,8 @@ You can also:
   - Send Story Views
   - Like, Unlike, Comment in a Post
   - Follow, Unfollow User
+
+</p>
 
 ### Tech
 
