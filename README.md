@@ -7,7 +7,7 @@ MyIGBot is a Instagram Private API to like, follow, comment, view & intaract wit
   - More Features
   - 2FA Login Support
 
-# New Features!
+## New Features!
 
   - Upload Post and Stories
   - Intaract with Stories
