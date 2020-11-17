@@ -4,16 +4,7 @@
 
 MyIGBot is a Instagram Private API to like, follow, comment, view & intaract with stories and upload post & stories.
 
-<div style="clear: both;">
-  <div style="float: left; margin-right 1em;">
-    <img src='https://raw.githubusercontent.com/b31ngD3v/MyIGBot/main/Screenshot_20201117-112159.png' alt='' height='800' />
-  </div>
-  <div>
-    <h2>Some title text</h2>
-    <p>Some more text that will appear to the left of the image.</p>
-  </div>
-</div>
-
+<img src='https://raw.githubusercontent.com/b31ngD3v/MyIGBot/main/Screenshot_20201117-112159.png' alt='' height='800' />
 
   - Easy to use
   - More Features
