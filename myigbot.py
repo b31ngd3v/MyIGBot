@@ -371,7 +371,7 @@ class MyIGBot:
             data_json = json.loads(data_object)
         try:
             shortcode = data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][0]["node"]["shortcode"]
-            self.like('https://www.instagram.com/p/'+shortcode+'/')
+            return self.like('https://www.instagram.com/p/'+shortcode+'/')
         except IndexError:
             return 404
         except KeyError:
@@ -455,7 +455,7 @@ class MyIGBot:
             data_json = json.loads(data_object)
         try:
             shortcode = data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][0]["node"]["shortcode"]
-            self.comment('https://www.instagram.com/p/'+shortcode+'/', comment_text)
+            return self.comment('https://www.instagram.com/p/'+shortcode+'/', comment_text)
         except IndexError:
             return 404
         except KeyError:
