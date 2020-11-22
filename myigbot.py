@@ -1740,3 +1740,4 @@ class MyIGBot:
         dp_url = json.loads(response)['graphql']['user']['profile_pic_url_hd']
 
         return dp_url
+        
