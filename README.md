@@ -41,12 +41,13 @@ $ pip install myigbot
 ```
 ### Usage
 
-Here is how to use MyIGBot
+Here is how to use MyIGBot (you can also check usage.py)
 
 ###### Login Process (if you're account has 2 Factor Auth. The Bot Will Ask You The Code.)
 
 ```sh
 from myigbot import MyIGBot
+
 bot = MyIGBot('USERNAME', 'PASSWORD')
 ```
 ###### Like post
@@ -71,7 +72,6 @@ print(response)  # if the response code is 200 that means ok
 
 ```sh
 response = bot.comment('https://www.instagram.com/p/CH5qV6-so6Y/', comment_text='Nice Post!')
-
 print(response)  # if the response code is 200 that means ok
 ```
 ###### Comment on recent post
