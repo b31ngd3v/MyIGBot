@@ -31,7 +31,7 @@ MyIGBot uses a number of open source projects to work properly:
 
 And of course MyIGBot itself is open source with a [public repository](https://github.com/b31ngD3v/MyIGBot)
  on GitHub.
-
+ 
 ### Installation
 
 Install MyIGBot from PyPi
