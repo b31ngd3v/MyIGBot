@@ -10,6 +10,7 @@ MyIGBot is a Instagram Private API to like, follow, comment, view & intaract wit
 
   - Get information of a user/post.
   - Get posts based on hashtag/location.
+  - It also supports proxy now.
   - Added 35+ features on this update.
 
 You can also:
@@ -277,6 +278,30 @@ print(response)
 ```sh
 response = bot.post_time('https://www.instagram.com/p/CH5qV6-so6Y/')
 print(response)
+```
+### Proxy
+Here is how to add proxy
+
+#### Method For Authenticated Proxies
+```sh
+from myigbot import MyIGBot
+
+proxies = {
+    'http': 'user:pass@host:port',
+    'https': 'user:pass@host:port'
+}
+bot = MyIGBot('USERNAME', 'PASSWORD', proxy=proxies)
+```
+
+#### Method For Non-Authenticated Proxies
+```sh
+from myigbot import MyIGBot
+
+proxies = {
+  'http': 'host:port',
+  'https': 'host:port',
+}
+bot = MyIGBot('USERNAME', 'PASSWORD', proxy=proxies)
 ```
 
 License
