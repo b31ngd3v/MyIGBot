@@ -28,7 +28,7 @@ class MyIGBot:
         self.path = os.getcwd()
 
         if use_cookie == False or os.path.exists(self.path+f'//cookie_{self.username}.bot') == False:
-            link = 'https://www.instagram.com/accounts/login/'
+            link = 'https://www.instagram.com/'
             login_url = 'https://www.instagram.com/accounts/login/ajax/'
 
             time_now = int(datetime.now().timestamp())
