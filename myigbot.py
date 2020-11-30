@@ -4,8 +4,6 @@ from datetime import datetime
 import json
 from bs4 import BeautifulSoup as bs
 import time
-import random
-import numpy
 
 class bcolors:
     HEADER = '\033[95m'
@@ -778,23 +776,7 @@ class MyIGBot:
             return 400
 
     def hashtag_posts(self, hashtag, limit=20):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/graphql/query/?query_hash=9b498c08113f1e09617a1703c22b2f32&variables=%7B%22tag_name%22%3A%22{hashtag}%22%2C%22first%22%3A{limit}%7D', headers=headers, proxies=self.proxy).text
         post_count = len(json.loads(response)['data']['hashtag']['edge_hashtag_to_media']['edges'])
@@ -810,23 +792,7 @@ class MyIGBot:
 
     def location_posts(self, location_url, limit=20):
         id_location = location_url.split('/locations/')[1].split('/')[0]
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/graphql/query/?query_hash=36bd0f2bf5911908de389b8ceaa3be6d&variables=%7B%22id%22%3A%22{id_location}%22%2C%22first%22%3A{limit}%7D', headers=headers, proxies=self.proxy).text
         post_count = len(json.loads(response)['data']['location']['edge_location_to_media']['edges'])
@@ -841,23 +807,7 @@ class MyIGBot:
         return links
 
     def user_posts_count(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         post_count = json.loads(response)['graphql']['user']['edge_owner_to_timeline_media']['count']
@@ -865,23 +815,7 @@ class MyIGBot:
         return post_count
 
     def user_followers_count(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         followers_count = json.loads(response)['graphql']['user']['edge_followed_by']['count']
@@ -889,23 +823,7 @@ class MyIGBot:
         return followers_count
 
     def user_follow_count(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         follow_count = json.loads(response)['graphql']['user']['edge_follow']['count']
@@ -919,23 +837,7 @@ class MyIGBot:
             post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
         except:
             pass
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
@@ -952,23 +854,7 @@ class MyIGBot:
             post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
         except:
             pass
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
@@ -985,23 +871,7 @@ class MyIGBot:
             limit=posts_have
 
         limit_k=limit
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         user_id = json.loads(response)['graphql']['user']['id']
@@ -1044,23 +914,7 @@ class MyIGBot:
             limit=followed
 
         limit_k=limit
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         user_id = json.loads(response)['graphql']['user']['id']
@@ -1103,23 +957,7 @@ class MyIGBot:
             limit=follower
 
         limit_k=limit
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         user_id = json.loads(response)['graphql']['user']['id']
@@ -1168,23 +1006,7 @@ class MyIGBot:
             limit=likers
 
         limit_k=limit
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         shortcode = post_link.split('/p/')[1].replace('/', '')
         usernames=[]
@@ -1231,23 +1053,7 @@ class MyIGBot:
             limit=commenters
 
         limit_k=limit
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         shortcode = post_link.split('/p/')[1].replace('/', '')
 
@@ -1282,23 +1088,7 @@ class MyIGBot:
         return usernames
 
     def feed_posts(self):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
         response = self.session.get('https://www.instagram.com/graphql/query/?query_hash=c699b185975935ae2a457f24075de8c7', headers=headers, proxies=self.proxy).text
 
         post_count = len(json.loads(response)['data']['user']['edge_web_feed_timeline']['edges'])
@@ -1315,23 +1105,7 @@ class MyIGBot:
             post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
         except:
             pass
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
@@ -1348,23 +1122,7 @@ class MyIGBot:
             post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
         except:
             pass
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
@@ -1381,23 +1139,7 @@ class MyIGBot:
             post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
         except:
             pass
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
@@ -1430,23 +1172,7 @@ class MyIGBot:
             post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
         except:
             pass
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
@@ -1477,23 +1203,7 @@ class MyIGBot:
             post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
         except:
             pass
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
@@ -1510,23 +1220,7 @@ class MyIGBot:
             post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
         except:
             pass
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
@@ -1547,23 +1241,7 @@ class MyIGBot:
         except:
             pass
         if self.post_type(post_link) == 'video':
-            headers = {
-                "accept": "*/*",
-                "accept-encoding": "gzip, deflate, br",
-                "accept-language": "en-US,en;q=0.9",
-                "content-length": "0",
-                "content-type": "application/x-www-form-urlencoded",
-                "cookie": self.cookie,
-                "sec-fetch-dest": "empty",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin",
-                "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-                "x-csrftoken": self.csrf_token,
-                "x-ig-app-id": "936619743392459",
-                "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-                "x-instagram-ajax": "d3d3aea32e75",
-                "x-requested-with": "XMLHttpRequest"
-            }
+            headers = self._get_headers()
 
             if post_link[-1] == '/':
                 post_link = post_link[:-1]
@@ -1574,23 +1252,7 @@ class MyIGBot:
             return view_count
         
     def followed_by_me(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         followed_by_viewer = bool(json.loads(response)['graphql']['user']['followed_by_viewer'])
@@ -1598,23 +1260,7 @@ class MyIGBot:
         return followed_by_viewer
         
     def follows_me(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         follows_viewer = bool(json.loads(response)['graphql']['user']['follows_viewer'])
@@ -1622,23 +1268,7 @@ class MyIGBot:
         return follows_viewer
 
     def user_external_url(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         url = json.loads(response)['graphql']['user']['external_url']
@@ -1646,23 +1276,7 @@ class MyIGBot:
         return url
 
     def verified_user(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         is_verified = bool(json.loads(response)['graphql']['user']['is_verified'])
@@ -1670,23 +1284,7 @@ class MyIGBot:
         return is_verified
 
     def private_user(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         is_private = bool(json.loads(response)['graphql']['user']['is_private'])
@@ -1694,23 +1292,7 @@ class MyIGBot:
         return is_private
 
     def user_bio(self, username):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+        headers = self._get_headers()
 
         response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
         bio = json.loads(response)['graphql']['user']['biography']
@@ -1718,6 +1300,17 @@ class MyIGBot:
         return bio
 
     def user_dp(self, username):
+        headers = self._get_headers()
+
+        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
+        dp_url = json.loads(response)['graphql']['user']['profile_pic_url_hd']
+
+        return dp_url
+    
+    def _get_headers(self, options=None):
+        if options is None:
+            options = dict()
+
         headers = {
             "accept": "*/*",
             "accept-encoding": "gzip, deflate, br",
@@ -1735,9 +1328,8 @@ class MyIGBot:
             "x-instagram-ajax": "d3d3aea32e75",
             "x-requested-with": "XMLHttpRequest"
         }
-
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers, proxies=self.proxy).text
-        dp_url = json.loads(response)['graphql']['user']['profile_pic_url_hd']
-
-        return dp_url
         
+        for key, value in options.items():
+            headers[key] = value
+        
+        return headers
