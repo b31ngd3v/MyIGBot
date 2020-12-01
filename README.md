@@ -28,7 +28,6 @@ MyIGBot uses a number of open source projects to work properly:
 * [Python](https://www.python.org/) - Python is an interpreted, high-level and general-purpose programming language
 * [Requests](https://requests.readthedocs.io/en/master/) - to make HTTP requests simpler
 * [BeautifulSoup](https://pypi.org/project/beautifulsoup4/) - is a Python package for parsing HTML and XML documents.
-* [Numpy](https://numpy.org/) - is the core library for scientific computing in Python.
 
 And of course MyIGBot itself is open source with a [public repository](https://github.com/b31ngD3v/MyIGBot)
  on GitHub.
