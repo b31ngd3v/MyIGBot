@@ -312,7 +312,7 @@ License
 ----
 
 <p>
-<img src="https://opensource.org/files/OSIApproved_1.png" alt="OpenSource" height=180px />
+<img src="https://opensource.org/files/OSIApproved_1.png" alt="OpenSource" height=181px />
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/7195e121-eded-45cf-9aab-909deebd81b2/d9ur2lg-28410b47-58fd-4a48-9b67-49c0f56c68ce.png" alt="MIT" height=175px />
 </p>
