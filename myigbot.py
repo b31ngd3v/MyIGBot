@@ -4,6 +4,8 @@ from datetime import datetime
 import json
 from bs4 import BeautifulSoup as bs
 import time
+import random
+import string
 
 class bcolors:
     HEADER = '\033[95m'
@@ -31,7 +33,11 @@ class MyIGBot:
 
             time_now = int(datetime.now().timestamp())
             response = requests.get(link, proxies=self.proxy)
-            csrf = response.cookies['csrftoken']
+            try:
+                csrf = response.cookies['csrftoken']
+            except:
+                letters = string.ascii_lowercase
+                csrf = ''.join(random.choice(letters) for i in range(8))
 
             payload = {
                 'username': self.username,
