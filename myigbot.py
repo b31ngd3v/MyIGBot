@@ -176,7 +176,8 @@ class MyIGBot:
                         quit()
 
             self.sessionid = login_response.headers['Set-Cookie'].split('sessionid=')[1].split(';')[0]                
-            self.cookie = "sessionid=" + self.sessionid + "; csrftoken=" + self.csrf_token + ";"
+            self.userId =   login_response.headers['Set-Cookie'].split('ds_user_id=')[1].split(';')[0]              
+            self.cookie = "sessionid=" + self.sessionid + "; csrftoken=" + self.csrf_token + ";" + 'ds_user_id=' + self.userId + ";"
             create_cookie = open(self.path+f'//cookie_{self.username}.bot', 'w+', encoding='utf-8')
             create_cookie.write(self.cookie)
             create_cookie.close()
