@@ -58,7 +58,10 @@ class MyIGBot:
 
             cookies = login_response.cookies
             cookie_jar = cookies.get_dict()
-            self.csrf_token = cookie_jar['csrftoken']
+            try:
+                self.csrf_token = cookie_jar['csrftoken']
+            except:
+                self.csrf_token = csrf
 
             try:
                 if json_data["authenticated"]:
