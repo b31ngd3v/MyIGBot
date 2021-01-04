@@ -197,7 +197,7 @@ class MyIGBot:
                 homelink = 'https://www.instagram.com/op/'
                 self.session = requests.session()
                 self.sessionid = self.cookie.split('=')[1].split(';')[0]
-                self.csrf_token = self.cookie.split('=')[2].replace(';', '')
+                self.csrf_token = self.cookie.split('=')[2].split(';')[0]
                 cookie_obj = requests.cookies.create_cookie(
                     name='sessionid', secure=True, value=self.sessionid)
                 self.session.cookies.set_cookie(cookie_obj)
