@@ -703,6 +703,7 @@ class MyIGBot:
             url = "https://www.instagram.com/create/configure/"
 
             payload = 'upload_id=' + upload_id + '&caption=' + caption + '&usertags=&custom_accessibility_caption=&retry_timeout='
+            payload = payload.encode('utf-8')
             headers = {
                 'authority': 'www.instagram.com',
                 'x-ig-www-claim': 'hmac.AR2-43UfYbG2ZZLxh-BQ8N0rqGa-hESkcmxat2RqMAXejXE3',
