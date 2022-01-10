@@ -43,7 +43,7 @@ $ pip install myigbot
 
 Here is how to use MyIGBot (you can also check usage.py)
 
-###### Login Process (if you're account has 2 Factor Auth. The Bot Will Ask You The Code.)
+###### Login Process (if your account has 2 Factor Auth. The bot will ask you the code.)
 
 ```sh
 from myigbot import MyIGBot
