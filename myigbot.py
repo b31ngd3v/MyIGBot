@@ -7,6 +7,8 @@ import time
 import random
 import string
 
+from typing import List
+
 from project.instagram.MyIGBot.utils import get_media_duration
 
 
@@ -392,8 +394,9 @@ class MyIGBot:
             data_json = json.loads(data_object)
         try:
             shortcode = \
-            data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][0][
-                "node"]["shortcode"]
+                data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][
+                    0][
+                    "node"]["shortcode"]
             return self.like('https://www.instagram.com/p/' + shortcode + '/')
         except IndexError:
             return 404
@@ -480,8 +483,9 @@ class MyIGBot:
             data_json = json.loads(data_object)
         try:
             shortcode = \
-            data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][0][
-                "node"]["shortcode"]
+                data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][
+                    0][
+                    "node"]["shortcode"]
             return self.comment('https://www.instagram.com/p/' + shortcode + '/', comment_text)
         except IndexError:
             return 404
@@ -749,10 +753,55 @@ class MyIGBot:
             json_data = json.loads(response.text)
 
             if json_data["status"] == "ok":
-                return 200
+                return {"code": 200, "id": json_data['media']['code']}
 
         else:
-            return 400
+            return {"code": 400}
+
+    def upload_posts(self, image_paths: List[str], caption=''):
+        upload_ids = []
+
+        for path in image_paths:
+            id = int(datetime.now().timestamp())
+            json_data = self.pre_upload_image(path, id=id)
+
+            if 'upload_id' not in json_data:
+                raise Exception("Error during image thumbnail upload")
+
+            upload_ids.append({"upload_id": json_data['upload_id']})
+
+        url = "https://i.instagram.com/api/v1/media/configure_sidecar/"
+        payload = {
+            "caption": caption,
+            "children_metadata": upload_ids,
+            "client_sidecar_id": str(int(datetime.now().timestamp())),
+            "disable_comments": 0,
+        }
+        headers = {
+            'authority': 'i.instagram.com',
+            'x-ig-www-claim': 'hmac.AR2-43UfYbG2ZZLxh-BQ8N0rqGa-hESkcmxat2RqMAXejXE3',
+            'x-instagram-ajax': 'adb961e446b7-hot',
+            'accept': '*/*',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
+            'x-csrftoken': self.csrf_token,
+            'x-ig-app-id': '1217981644879628',
+            'origin': 'https://www.instagram.com',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
+            'referer': 'https://www.instagram.com/',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+            'cookie': self.cookie
+        }
+
+        response = requests.request("POST", url, headers=headers, data=json.dumps(payload), proxies=self.proxy)
+        json_data = json.loads(response.text)
+
+        if json_data["status"] == "ok":
+            return {"code": 200, "id": json_data['media']['code']}
+
+        return {"code": 400}
 
     def pre_upload_video(self, video_path: str, video_params, id=None):
         micro_time = id or int(datetime.now().timestamp())
