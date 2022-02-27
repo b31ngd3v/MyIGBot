@@ -36,6 +36,8 @@ And of course MyIGBot itself is open source with a [public repository](https://g
 
 Place **myigbot.py** in the same folder where your project is. **(recommended)**
 
+**or,**
+
 Install MyIGBot from PyPi **(out of date)**
 
 ```sh
