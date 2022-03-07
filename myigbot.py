@@ -7,7 +7,7 @@ import time
 import random
 import string
 
-from project.instagram.MyIGBot.utils import get_media_duration
+from utils import get_media_duration
 
 
 class bcolors:
