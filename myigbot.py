@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup as bs
 import time
 import random
 import string
-
+from typing import List
 from utils import get_media_duration
 
 
@@ -392,8 +392,9 @@ class MyIGBot:
             data_json = json.loads(data_object)
         try:
             shortcode = \
-            data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][0][
-                "node"]["shortcode"]
+                data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][
+                    0][
+                    "node"]["shortcode"]
             return self.like('https://www.instagram.com/p/' + shortcode + '/')
         except IndexError:
             return 404
@@ -480,8 +481,9 @@ class MyIGBot:
             data_json = json.loads(data_object)
         try:
             shortcode = \
-            data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][0][
-                "node"]["shortcode"]
+                data_json["entry_data"]["ProfilePage"][0]["graphql"]['user']["edge_owner_to_timeline_media"]["edges"][
+                    0][
+                    "node"]["shortcode"]
             return self.comment('https://www.instagram.com/p/' + shortcode + '/', comment_text)
         except IndexError:
             return 404
@@ -695,8 +697,7 @@ class MyIGBot:
 
         return 200
 
-    def pre_upload_image(self, image_path: str, id=None, media_type=1, upload_media_height=1080,
-                         upload_media_width=1080):
+    def pre_upload_image(self, image_path: str, id=None, media_type=1, upload_media_height=1080, upload_media_width=1080):
         micro_time = id or int(datetime.now().timestamp())
 
         headers = {
@@ -749,788 +750,865 @@ class MyIGBot:
             json_data = json.loads(response.text)
 
             if json_data["status"] == "ok":
-                return 200
-
-        else:
-            return 400
-
-    def pre_upload_video(self, video_path: str, video_params, id=None):
-        micro_time = id or int(datetime.now().timestamp())
-
-        headers = {
-            # "content-type": "video / mp4",
-            "content-length": "1",
-            "X-Entity-Name": f"fb_uploader_{micro_time}",
-            "Offset": "0",
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36",
-            "x-entity-length": "1",
-            "X-Instagram-Rupload-Params": json.dumps(video_params),
-            # f'{{"media_type": 1, "upload_id": {micro_time}, "upload_media_height": 1080, "upload_media_width": 1080}}',
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "1217981644879628",
-            "cookie": self.cookie
-
-        }
-
-        upload_response = requests.post(f'https://www.instagram.com/rupload_igvideo/fb_uploader_{micro_time}',
-                                        data=open(video_path, "rb"), headers=headers, proxies=self.proxy)
-        return json.loads(upload_response.text)
-
-    def upload_video_post(self, video_path: str, thumbnail_path: str, caption: str = '', params=None):
-        micro_time = int(datetime.now().timestamp())
-
-        media_duration = get_media_duration(video_path)
-
-        video_params = params or {
-            "client-passthrough": "1",
-            "is_igtv_video": True,
-            "is_sidecar": "0",
-            "is_unified_video": "1",
-            "media_type": 2,
-            "for_album": False,
-            "video_format": "",
-            "upload_id": micro_time,
-            "upload_media_duration_ms": media_duration * 1000,
-            "upload_media_height": 720,
-            "upload_media_width": 1280,
-            "video_transform": None,
-            "video_edit_params": {
-                "crop_height": 720,
-                "crop_width": 720,
-                "crop_x1": 280,
-                "crop_y1": 0,
-                "mute": False,
-                "trim_end": media_duration,
-                "trim_start": 0
-            }
-        }
-
-        json_data = self.pre_upload_video(video_path, video_params, id=micro_time)
-
-        if 'media_id' not in json_data:
-            raise Exception("Error during video upload")
-
-        time.sleep(30)
-        json_data = self.pre_upload_image(thumbnail_path, id=micro_time, media_type=2)
-
-        if 'upload_id' not in json_data:
-            raise Exception("Error during image thumbnail upload")
-
-        upload_id = json_data['upload_id']
-        time.sleep(30)
-
-        if json_data["status"] == "ok":
-            url = "https://www.instagram.com/igtv/configure_to_igtv/"
-
-            payload = 'upload_id=' + upload_id + '&caption=' + caption + '&source_type=library&upcoming_event=&usertags=&custom_accessibility_caption=&retry_timeout=&disable_comments=0&like_and_view_counts_disabled=0&igtv_ads_toggled_on=&igtv_share_preview_to_feed=1&is_unified_video=1&video_subtitles_enabled=0'
-            payload = payload.encode('utf-8')
-            headers = {
-                'authority': 'www.instagram.com',
-                'x-ig-www-claim': 'hmac.AR2-43UfYbG2ZZLxh-BQ8N0rqGa-hESkcmxat2RqMAXejXE3',
-                'x-instagram-ajax': 'adb961e446b7-hot',
-                'content-type': 'application/x-www-form-urlencoded',
-                'accept': '*/*',
-                'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
-                'x-requested-with': 'XMLHttpRequest',
-                'x-csrftoken': self.csrf_token,
-                'x-ig-app-id': '1217981644879628',
-                'origin': 'https://www.instagram.com',
-                'sec-fetch-site': 'same-origin',
-                'sec-fetch-mode': 'cors',
-                'sec-fetch-dest': 'empty',
-                'referer': 'https://www.instagram.com/',
-                'accept-language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
-                'cookie': self.cookie
-            }
-
-            response = requests.request("POST", url, headers=headers, data=payload, proxies=self.proxy)
-            json_data = json.loads(response.text)
-
-            if json_data["status"] == "ok":
                 return {"code": 200, "id": json_data['media']['code']}
 
         else:
             return {"code": 400}
 
-    def upload_story(self, image_path):
-        micro_time = int(datetime.now().timestamp())
+    def upload_posts(self, image_paths: List[str], caption=''):
+        upload_ids = []
 
+        for path in image_paths:
+            id = int(datetime.now().timestamp())
+            json_data = self.pre_upload_image(path, id=id)
+
+            if 'upload_id' not in json_data:
+                raise Exception("Error during image thumbnail upload")
+
+            upload_ids.append({"upload_id": json_data['upload_id']})
+
+        url = "https://i.instagram.com/api/v1/media/configure_sidecar/"
+        payload = {
+            "caption": caption,
+            "children_metadata": upload_ids,
+            "client_sidecar_id": str(int(datetime.now().timestamp())),
+            "disable_comments": 0,
+        }
         headers = {
-            "content-type": "image / jpg",
-            "content-length": "1",
-            "X-Entity-Name": f"fb_uploader_{micro_time}",
-            "Offset": "0",
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36",
-            "x-entity-length": "1",
-            "X-Instagram-Rupload-Params": f'{{"media_type": 1, "upload_id": {micro_time}, "upload_media_height": 1080, "upload_media_width": 1080}}',
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "1217981644879628",
-            "cookie": self.cookie
+            'authority': 'i.instagram.com',
+            'x-ig-www-claim': 'hmac.AR2-43UfYbG2ZZLxh-BQ8N0rqGa-hESkcmxat2RqMAXejXE3',
+            'x-instagram-ajax': 'adb961e446b7-hot',
+            'accept': '*/*',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
+            'x-csrftoken': self.csrf_token,
+            'x-ig-app-id': '1217981644879628',
+            'origin': 'https://www.instagram.com',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
+            'referer': 'https://www.instagram.com/',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+            'cookie': self.cookie
         }
 
-        upload_response = requests.post(f'https://www.instagram.com/rupload_igphoto/fb_uploader_{micro_time}',
-                                        data=open(image_path, "rb"), headers=headers, proxies=self.proxy)
-
-        json_data = json.loads(upload_response.text)
-        upload_id = json_data['upload_id']
+        response = requests.request("POST", url, headers=headers, data=json.dumps(payload), proxies=self.proxy)
+        json_data = json.loads(response.text)
 
         if json_data["status"] == "ok":
-            url = "https://www.instagram.com/create/configure_to_story/"
+            return {"code": 200, "id": json_data['media']['code']}
 
-            payload = 'upload_id=' + upload_id + '&caption=&usertags=&custom_accessibility_caption=&retry_timeout='
-            headers = {
-                'authority': 'www.instagram.com',
-                'x-ig-www-claim': 'hmac.AR2-43UfYbG2ZZLxh-BQ8N0rqGa-hESkcmxat2RqMAXejXE3',
-                'x-instagram-ajax': 'adb961e446b7-hot',
-                'content-type': 'application/x-www-form-urlencoded',
-                'accept': '*/*',
-                'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
-                'x-requested-with': 'XMLHttpRequest',
-                'x-csrftoken': self.csrf_token,
-                'x-ig-app-id': '1217981644879628',
-                'origin': 'https://www.instagram.com',
-                'sec-fetch-site': 'same-origin',
-                'sec-fetch-mode': 'cors',
-                'sec-fetch-dest': 'empty',
-                'referer': 'https://www.instagram.com/create/details/',
-                'accept-language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
-                'cookie': self.cookie
-            }
+        return {"code": 400}
 
-            response = requests.request("POST", url, headers=headers, data=payload, proxies=self.proxy)
-            json_data = json.loads(response.text)
 
-            if json_data["status"] == "ok":
-                return 200
+def pre_upload_video(self, video_path: str, video_params, id=None):
+    micro_time = id or int(datetime.now().timestamp())
 
-        else:
-            return 400
+    headers = {
+        # "content-type": "video / mp4",
+        "content-length": "1",
+        "X-Entity-Name": f"fb_uploader_{micro_time}",
+        "Offset": "0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36",
+        "x-entity-length": "1",
+        "X-Instagram-Rupload-Params": json.dumps(video_params),
+        # f'{{"media_type": 1, "upload_id": {micro_time}, "upload_media_height": 1080, "upload_media_width": 1080}}',
+        "x-csrftoken": self.csrf_token,
+        "x-ig-app-id": "1217981644879628",
+        "cookie": self.cookie
 
-    def hashtag_posts(self, hashtag, limit=20):
-        headers = self._get_headers()
+    }
 
-        response = self.session.get(
-            f'https://www.instagram.com/graphql/query/?query_hash=9b498c08113f1e09617a1703c22b2f32&variables=%7B%22tag_name%22%3A%22{hashtag}%22%2C%22first%22%3A{limit}%7D',
-            headers=headers, proxies=self.proxy).text
-        post_count = len(json.loads(response)['data']['hashtag']['edge_hashtag_to_media']['edges'])
+    upload_response = requests.post(f'https://www.instagram.com/rupload_igvideo/fb_uploader_{micro_time}',
+                                    data=open(video_path, "rb"), headers=headers, proxies=self.proxy)
+    return json.loads(upload_response.text)
 
-        if limit > post_count:
-            limit = post_count
 
-        links = []
-        for i in range(0, limit):
-            links.append('https://instagram.com/p/' +
-                         json.loads(response)['data']['hashtag']['edge_hashtag_to_media']['edges'][i]['node'][
-                             'shortcode'])
+def upload_video_post(self, video_path: str, thumbnail_path: str, caption: str = '', params=None):
+    micro_time = int(datetime.now().timestamp())
 
-        return links
+    media_duration = get_media_duration(video_path)
 
-    def location_posts(self, location_url, limit=20):
-        id_location = location_url.split('/locations/')[1].split('/')[0]
-        headers = self._get_headers()
+    video_params = params or {
+        "client-passthrough": "1",
+        "is_igtv_video": True,
+        "is_sidecar": "0",
+        "is_unified_video": "1",
+        "media_type": 2,
+        "for_album": False,
+        "video_format": "",
+        "upload_id": micro_time,
+        "upload_media_duration_ms": media_duration * 1000,
+        "upload_media_height": 720,
+        "upload_media_width": 1280,
+        "video_transform": None,
+        "video_edit_params": {
+            "crop_height": 720,
+            "crop_width": 720,
+            "crop_x1": 280,
+            "crop_y1": 0,
+            "mute": False,
+            "trim_end": media_duration,
+            "trim_start": 0
+        }
+    }
 
-        response = self.session.get(
-            f'https://www.instagram.com/graphql/query/?query_hash=36bd0f2bf5911908de389b8ceaa3be6d&variables=%7B%22id%22%3A%22{id_location}%22%2C%22first%22%3A{limit}%7D',
-            headers=headers, proxies=self.proxy).text
-        post_count = len(json.loads(response)['data']['location']['edge_location_to_media']['edges'])
+    json_data = self.pre_upload_video(video_path, video_params, id=micro_time)
 
-        if limit > post_count:
-            limit = post_count
+    if 'media_id' not in json_data:
+        raise Exception("Error during video upload")
 
-        links = []
-        for i in range(0, limit):
-            links.append('https://instagram.com/p/' +
-                         json.loads(response)['data']['location']['edge_location_to_media']['edges'][i]['node'][
-                             'shortcode'])
+    time.sleep(30)
+    json_data = self.pre_upload_image(thumbnail_path, id=micro_time, media_type=2)
 
-        return links
+    if 'upload_id' not in json_data:
+        raise Exception("Error during image thumbnail upload")
 
-    def user_posts_count(self, username):
-        headers = self._get_headers()
+    upload_id = json_data['upload_id']
+    time.sleep(30)
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        post_count = json.loads(response)['graphql']['user']['edge_owner_to_timeline_media']['count']
+    if json_data["status"] == "ok":
+        url = "https://www.instagram.com/igtv/configure_to_igtv/"
 
-        return post_count
+        payload = 'upload_id=' + upload_id + '&caption=' + caption + '&source_type=library&upcoming_event=&usertags=&custom_accessibility_caption=&retry_timeout=&disable_comments=0&like_and_view_counts_disabled=0&igtv_ads_toggled_on=&igtv_share_preview_to_feed=1&is_unified_video=1&video_subtitles_enabled=0'
+        payload = payload.encode('utf-8')
+        headers = {
+            'authority': 'www.instagram.com',
+            'x-ig-www-claim': 'hmac.AR2-43UfYbG2ZZLxh-BQ8N0rqGa-hESkcmxat2RqMAXejXE3',
+            'x-instagram-ajax': 'adb961e446b7-hot',
+            'content-type': 'application/x-www-form-urlencoded',
+            'accept': '*/*',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
+            'x-requested-with': 'XMLHttpRequest',
+            'x-csrftoken': self.csrf_token,
+            'x-ig-app-id': '1217981644879628',
+            'origin': 'https://www.instagram.com',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
+            'referer': 'https://www.instagram.com/',
+            'accept-language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+            'cookie': self.cookie
+        }
 
-    def user_followers_count(self, username):
-        headers = self._get_headers()
+        response = requests.request("POST", url, headers=headers, data=payload, proxies=self.proxy)
+        json_data = json.loads(response.text)
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        followers_count = json.loads(response)['graphql']['user']['edge_followed_by']['count']
+        if json_data["status"] == "ok":
+            return {"code": 200, "id": json_data['media']['code']}
 
-        return followers_count
+    else:
+        return {"code": 400}
 
-    def user_follow_count(self, username):
-        headers = self._get_headers()
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        follow_count = json.loads(response)['graphql']['user']['edge_follow']['count']
+def upload_story(self, image_path):
+    micro_time = int(datetime.now().timestamp())
 
-        return follow_count
+    headers = {
+        "content-type": "image / jpg",
+        "content-length": "1",
+        "X-Entity-Name": f"fb_uploader_{micro_time}",
+        "Offset": "0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36",
+        "x-entity-length": "1",
+        "X-Instagram-Rupload-Params": f'{{"media_type": 1, "upload_id": {micro_time}, "upload_media_height": 1080, "upload_media_width": 1080}}',
+        "x-csrftoken": self.csrf_token,
+        "x-ig-app-id": "1217981644879628",
+        "cookie": self.cookie
+    }
 
-    def like_count(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        headers = self._get_headers()
+    upload_response = requests.post(f'https://www.instagram.com/rupload_igphoto/fb_uploader_{micro_time}',
+                                    data=open(image_path, "rb"), headers=headers, proxies=self.proxy)
 
-        if post_link[-1] == '/':
-            post_link = post_link[:-1]
+    json_data = json.loads(upload_response.text)
+    upload_id = json_data['upload_id']
 
-        response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-        like_count = json.loads(response)['graphql']['shortcode_media']['edge_media_preview_like']['count']
+    if json_data["status"] == "ok":
+        url = "https://www.instagram.com/create/configure_to_story/"
 
-        return like_count
+        payload = 'upload_id=' + upload_id + '&caption=&usertags=&custom_accessibility_caption=&retry_timeout='
+        headers = {
+            'authority': 'www.instagram.com',
+            'x-ig-www-claim': 'hmac.AR2-43UfYbG2ZZLxh-BQ8N0rqGa-hESkcmxat2RqMAXejXE3',
+            'x-instagram-ajax': 'adb961e446b7-hot',
+            'content-type': 'application/x-www-form-urlencoded',
+            'accept': '*/*',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
+            'x-requested-with': 'XMLHttpRequest',
+            'x-csrftoken': self.csrf_token,
+            'x-ig-app-id': '1217981644879628',
+            'origin': 'https://www.instagram.com',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
+            'referer': 'https://www.instagram.com/create/details/',
+            'accept-language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+            'cookie': self.cookie
+        }
 
-    def comment_count(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        headers = self._get_headers()
+        response = requests.request("POST", url, headers=headers, data=payload, proxies=self.proxy)
+        json_data = json.loads(response.text)
 
-        if post_link[-1] == '/':
-            post_link = post_link[:-1]
+        if json_data["status"] == "ok":
+            return 200
 
-        response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-        comment_count = json.loads(response)['graphql']['shortcode_media']['edge_media_preview_comment']['count']
+    else:
+        return 400
 
-        return comment_count
 
-    def user_posts(self, username, limit=50):
-        posts_have = self.user_posts_count(username)
+def hashtag_posts(self, hashtag, limit=20):
+    headers = self._get_headers()
 
-        if posts_have < limit:
-            limit = posts_have
+    response = self.session.get(
+        f'https://www.instagram.com/graphql/query/?query_hash=9b498c08113f1e09617a1703c22b2f32&variables=%7B%22tag_name%22%3A%22{hashtag}%22%2C%22first%22%3A{limit}%7D',
+        headers=headers, proxies=self.proxy).text
+    post_count = len(json.loads(response)['data']['hashtag']['edge_hashtag_to_media']['edges'])
 
+    if limit > post_count:
+        limit = post_count
+
+    links = []
+    for i in range(0, limit):
+        links.append('https://instagram.com/p/' +
+                     json.loads(response)['data']['hashtag']['edge_hashtag_to_media']['edges'][i]['node'][
+                         'shortcode'])
+
+    return links
+
+
+def location_posts(self, location_url, limit=20):
+    id_location = location_url.split('/locations/')[1].split('/')[0]
+    headers = self._get_headers()
+
+    response = self.session.get(
+        f'https://www.instagram.com/graphql/query/?query_hash=36bd0f2bf5911908de389b8ceaa3be6d&variables=%7B%22id%22%3A%22{id_location}%22%2C%22first%22%3A{limit}%7D',
+        headers=headers, proxies=self.proxy).text
+    post_count = len(json.loads(response)['data']['location']['edge_location_to_media']['edges'])
+
+    if limit > post_count:
+        limit = post_count
+
+    links = []
+    for i in range(0, limit):
+        links.append('https://instagram.com/p/' +
+                     json.loads(response)['data']['location']['edge_location_to_media']['edges'][i]['node'][
+                         'shortcode'])
+
+    return links
+
+
+def user_posts_count(self, username):
+    headers = self._get_headers()
+
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    post_count = json.loads(response)['graphql']['user']['edge_owner_to_timeline_media']['count']
+
+    return post_count
+
+
+def user_followers_count(self, username):
+    headers = self._get_headers()
+
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    followers_count = json.loads(response)['graphql']['user']['edge_followed_by']['count']
+
+    return followers_count
+
+
+def user_follow_count(self, username):
+    headers = self._get_headers()
+
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    follow_count = json.loads(response)['graphql']['user']['edge_follow']['count']
+
+    return follow_count
+
+
+def like_count(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    headers = self._get_headers()
+
+    if post_link[-1] == '/':
+        post_link = post_link[:-1]
+
+    response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
+    like_count = json.loads(response)['graphql']['shortcode_media']['edge_media_preview_like']['count']
+
+    return like_count
+
+
+def comment_count(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    headers = self._get_headers()
+
+    if post_link[-1] == '/':
+        post_link = post_link[:-1]
+
+    response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
+    comment_count = json.loads(response)['graphql']['shortcode_media']['edge_media_preview_comment']['count']
+
+    return comment_count
+
+
+def user_posts(self, username, limit=50):
+    posts_have = self.user_posts_count(username)
+
+    if posts_have < limit:
+        limit = posts_have
+
+    limit_k = limit
+    headers = self._get_headers()
+
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    user_id = json.loads(response)['graphql']['user']['id']
+
+    links = []
+
+    response = self.session.get(
+        f'https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A{limit}%7D',
+        headers=headers, proxies=self.proxy).text
+    post_count = len(json.loads(response)['data']['user']['edge_owner_to_timeline_media']['edges'])
+
+    if limit > post_count:
+        limit = post_count
+
+    for i in range(0, limit):
+        links.append('https://instagram.com/p/' +
+                     json.loads(response)['data']['user']['edge_owner_to_timeline_media']['edges'][i]['node'][
+                         'shortcode'])
+
+    if limit_k > 50:
+        limit = limit_k - 50
         limit_k = limit
-        headers = self._get_headers()
+        while limit_k > 0:
+            try:
+                after = json.loads(response)['data']['user']['edge_owner_to_timeline_media']['page_info'][
+                    'end_cursor']
+                response = self.session.get(
+                    f'https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A50%2C%22after%22%3A%22{after.replace("==", "")}%3D%3D%22%7D',
+                    headers=headers, proxies=self.proxy).text
+                post_count = len(json.loads(response)['data']['user']['edge_owner_to_timeline_media']['edges'])
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        user_id = json.loads(response)['graphql']['user']['id']
+                if limit > post_count:
+                    limit = post_count
 
-        links = []
+                limit_k -= limit
+                for i in range(0, limit):
+                    links.append('https://instagram.com/p/' +
+                                 json.loads(response)['data']['user']['edge_owner_to_timeline_media']['edges'][i][
+                                     'node']['shortcode'])
+                limit = limit_k
+            except:
+                break
+    return links
 
-        response = self.session.get(
-            f'https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A{limit}%7D',
-            headers=headers, proxies=self.proxy).text
-        post_count = len(json.loads(response)['data']['user']['edge_owner_to_timeline_media']['edges'])
 
-        if limit > post_count:
-            limit = post_count
+def user_follows(self, username, limit=49):
+    followed = self.user_follow_count(username)
 
-        for i in range(0, limit):
-            links.append('https://instagram.com/p/' +
-                         json.loads(response)['data']['user']['edge_owner_to_timeline_media']['edges'][i]['node'][
-                             'shortcode'])
+    if followed < limit:
+        limit = followed
 
-        if limit_k > 50:
-            limit = limit_k - 50
-            limit_k = limit
-            while limit_k > 0:
-                try:
-                    after = json.loads(response)['data']['user']['edge_owner_to_timeline_media']['page_info'][
-                        'end_cursor']
-                    response = self.session.get(
-                        f'https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A50%2C%22after%22%3A%22{after.replace("==", "")}%3D%3D%22%7D',
-                        headers=headers, proxies=self.proxy).text
-                    post_count = len(json.loads(response)['data']['user']['edge_owner_to_timeline_media']['edges'])
+    limit_k = limit
+    headers = self._get_headers()
 
-                    if limit > post_count:
-                        limit = post_count
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    user_id = json.loads(response)['graphql']['user']['id']
 
-                    limit_k -= limit
-                    for i in range(0, limit):
-                        links.append('https://instagram.com/p/' +
-                                     json.loads(response)['data']['user']['edge_owner_to_timeline_media']['edges'][i][
-                                         'node']['shortcode'])
-                    limit = limit_k
-                except:
-                    break
-        return links
+    usernames = []
 
-    def user_follows(self, username, limit=49):
-        followed = self.user_follow_count(username)
+    response = self.session.get(
+        f'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A{limit}%7D',
+        headers=headers, proxies=self.proxy).text
+    follow_count = len(json.loads(response)['data']['user']['edge_follow']['edges'])
 
-        if followed < limit:
-            limit = followed
+    if limit > follow_count:
+        limit = follow_count
 
+    for i in range(0, limit):
+        usernames.append(json.loads(response)['data']['user']['edge_follow']['edges'][i]['node']['username'])
+
+    if limit_k > 49:
+        limit = limit_k - 49
         limit_k = limit
-        headers = self._get_headers()
+        while limit_k > 0:
+            try:
+                after = json.loads(response)['data']['user']['edge_follow']['page_info']['end_cursor']
+                response = self.session.get(
+                    f'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A50%2C%22after%22%3A%22{after.replace("==", "")}%3D%3D%22%7D',
+                    headers=headers, proxies=self.proxy).text
+                follow_count = len(json.loads(response)['data']['user']['edge_follow']['edges'])
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        user_id = json.loads(response)['graphql']['user']['id']
+                if limit > follow_count:
+                    limit = follow_count
 
-        usernames = []
+                limit_k -= limit
+                for i in range(0, limit):
+                    usernames.append(
+                        json.loads(response)['data']['user']['edge_follow']['edges'][i]['node']['username'])
+                limit = limit_k
+            except:
+                break
+    return usernames
 
-        response = self.session.get(
-            f'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A{limit}%7D',
-            headers=headers, proxies=self.proxy).text
-        follow_count = len(json.loads(response)['data']['user']['edge_follow']['edges'])
 
-        if limit > follow_count:
-            limit = follow_count
+def user_followers(self, username, limit=49):
+    follower = self.user_followers_count(username)
 
-        for i in range(0, limit):
-            usernames.append(json.loads(response)['data']['user']['edge_follow']['edges'][i]['node']['username'])
+    if follower < limit:
+        limit = follower
 
-        if limit_k > 49:
-            limit = limit_k - 49
-            limit_k = limit
-            while limit_k > 0:
-                try:
-                    after = json.loads(response)['data']['user']['edge_follow']['page_info']['end_cursor']
-                    response = self.session.get(
-                        f'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A50%2C%22after%22%3A%22{after.replace("==", "")}%3D%3D%22%7D',
-                        headers=headers, proxies=self.proxy).text
-                    follow_count = len(json.loads(response)['data']['user']['edge_follow']['edges'])
+    limit_k = limit
+    headers = self._get_headers()
 
-                    if limit > follow_count:
-                        limit = follow_count
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    user_id = json.loads(response)['graphql']['user']['id']
 
-                    limit_k -= limit
-                    for i in range(0, limit):
-                        usernames.append(
-                            json.loads(response)['data']['user']['edge_follow']['edges'][i]['node']['username'])
-                    limit = limit_k
-                except:
-                    break
-        return usernames
+    usernames = []
 
-    def user_followers(self, username, limit=49):
-        follower = self.user_followers_count(username)
+    response = self.session.get(
+        f'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A{limit}%7D',
+        headers=headers, proxies=self.proxy).text
+    follower_count = len(json.loads(response)['data']['user']['edge_followed_by']['edges'])
 
-        if follower < limit:
-            limit = follower
+    if limit > follower_count:
+        limit = follower_count
 
+    for i in range(0, limit):
+        usernames.append(json.loads(response)['data']['user']['edge_followed_by']['edges'][i]['node']['username'])
+
+    if limit_k > 49:
+        limit = limit_k - 49
         limit_k = limit
-        headers = self._get_headers()
+        while limit_k > 0:
+            try:
+                after = json.loads(response)['data']['user']['edge_followed_by']['page_info']['end_cursor']
+                response = self.session.get(
+                    f'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A50%2C%22after%22%3A%22{after.replace("==", "")}%3D%3D%22%7D',
+                    headers=headers, proxies=self.proxy).text
+                follower_count = len(json.loads(response)['data']['user']['edge_followed_by']['edges'])
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        user_id = json.loads(response)['graphql']['user']['id']
+                if limit > follower_count:
+                    limit = follower_count
 
-        usernames = []
+                limit_k -= limit
+                for i in range(0, limit):
+                    usernames.append(
+                        json.loads(response)['data']['user']['edge_followed_by']['edges'][i]['node']['username'])
+                limit = limit_k
+            except:
+                break
+    return usernames
 
-        response = self.session.get(
-            f'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A{limit}%7D',
-            headers=headers, proxies=self.proxy).text
-        follower_count = len(json.loads(response)['data']['user']['edge_followed_by']['edges'])
 
-        if limit > follower_count:
-            limit = follower_count
+def post_likers(self, post_link, limit=50):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    likers = self.like_count(post_link)
 
-        for i in range(0, limit):
-            usernames.append(json.loads(response)['data']['user']['edge_followed_by']['edges'][i]['node']['username'])
+    if likers < limit:
+        limit = likers
 
-        if limit_k > 49:
-            limit = limit_k - 49
-            limit_k = limit
-            while limit_k > 0:
-                try:
-                    after = json.loads(response)['data']['user']['edge_followed_by']['page_info']['end_cursor']
-                    response = self.session.get(
-                        f'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22{user_id}%22%2C%22first%22%3A50%2C%22after%22%3A%22{after.replace("==", "")}%3D%3D%22%7D',
-                        headers=headers, proxies=self.proxy).text
-                    follower_count = len(json.loads(response)['data']['user']['edge_followed_by']['edges'])
+    limit_k = limit
+    headers = self._get_headers()
 
-                    if limit > follower_count:
-                        limit = follower_count
+    shortcode = post_link.split('/p/')[1].replace('/', '')
+    usernames = []
 
-                    limit_k -= limit
-                    for i in range(0, limit):
-                        usernames.append(
-                            json.loads(response)['data']['user']['edge_followed_by']['edges'][i]['node']['username'])
-                    limit = limit_k
-                except:
-                    break
-        return usernames
+    response = self.session.get(
+        f'https://www.instagram.com/graphql/query/?query_hash=d5d763b1e2acf209d62d22d184488e57&variables=%7B%22shortcode%22%3A%22{shortcode}%22%2C%22first%22%3A{limit}%7D',
+        headers=headers, proxies=self.proxy).text
+    like_count = len(json.loads(response)['data']['shortcode_media']['edge_liked_by']['edges'])
 
-    def post_likers(self, post_link, limit=50):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        likers = self.like_count(post_link)
+    if limit > like_count:
+        limit = like_count
 
-        if likers < limit:
-            limit = likers
+    for i in range(0, limit):
+        usernames.append(
+            json.loads(response)['data']['shortcode_media']['edge_liked_by']['edges'][i]['node']['username'])
 
+    if limit_k > 50:
+        limit = limit_k - 50
         limit_k = limit
-        headers = self._get_headers()
+        while limit_k > 0:
+            try:
+                after = json.loads(response)['data']['shortcode_media']['edge_liked_by']['page_info']['end_cursor']
+                response = self.session.get(
+                    f'https://www.instagram.com/graphql/query/?query_hash=d5d763b1e2acf209d62d22d184488e57&variables=%7B%22shortcode%22%3A%22{shortcode}%22%2C%22first%22%3A50%2C%22after%22%3A%22{after.replace("==", "")}%3D%3D%22%7D',
+                    headers=headers, proxies=self.proxy).text
+                like_count = len(json.loads(response)['data']['shortcode_media']['edge_liked_by']['edges'])
 
-        shortcode = post_link.split('/p/')[1].replace('/', '')
-        usernames = []
+                if limit > like_count:
+                    limit = like_count
 
-        response = self.session.get(
-            f'https://www.instagram.com/graphql/query/?query_hash=d5d763b1e2acf209d62d22d184488e57&variables=%7B%22shortcode%22%3A%22{shortcode}%22%2C%22first%22%3A{limit}%7D',
-            headers=headers, proxies=self.proxy).text
-        like_count = len(json.loads(response)['data']['shortcode_media']['edge_liked_by']['edges'])
+                limit_k -= limit
+                for i in range(0, limit):
+                    usernames.append(
+                        json.loads(response)['data']['shortcode_media']['edge_liked_by']['edges'][i]['node'][
+                            'username'])
+                limit = limit_k
+            except:
+                break
+    return usernames
 
-        if limit > like_count:
-            limit = like_count
 
-        for i in range(0, limit):
-            usernames.append(
-                json.loads(response)['data']['shortcode_media']['edge_liked_by']['edges'][i]['node']['username'])
+def post_commenters(self, post_link, limit=50):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    commenters = self.comment_count(post_link)
 
-        if limit_k > 50:
-            limit = limit_k - 50
-            limit_k = limit
-            while limit_k > 0:
-                try:
-                    after = json.loads(response)['data']['shortcode_media']['edge_liked_by']['page_info']['end_cursor']
-                    response = self.session.get(
-                        f'https://www.instagram.com/graphql/query/?query_hash=d5d763b1e2acf209d62d22d184488e57&variables=%7B%22shortcode%22%3A%22{shortcode}%22%2C%22first%22%3A50%2C%22after%22%3A%22{after.replace("==", "")}%3D%3D%22%7D',
-                        headers=headers, proxies=self.proxy).text
-                    like_count = len(json.loads(response)['data']['shortcode_media']['edge_liked_by']['edges'])
+    if commenters < limit:
+        limit = commenters
 
-                    if limit > like_count:
-                        limit = like_count
+    limit_k = limit
+    headers = self._get_headers()
 
-                    limit_k -= limit
-                    for i in range(0, limit):
-                        usernames.append(
-                            json.loads(response)['data']['shortcode_media']['edge_liked_by']['edges'][i]['node'][
-                                'username'])
-                    limit = limit_k
-                except:
-                    break
-        return usernames
+    shortcode = post_link.split('/p/')[1].replace('/', '')
 
-    def post_commenters(self, post_link, limit=50):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        commenters = self.comment_count(post_link)
+    usernames = []
 
-        if commenters < limit:
-            limit = commenters
+    response = self.session.get(
+        f'https://www.instagram.com/graphql/query/?query_hash=bc3296d1ce80a24b1b6e40b1e72903f5&variables=%7B%22shortcode%22%3A%22{shortcode}%22%2C%22first%22%3A{limit}%7D',
+        headers=headers, proxies=self.proxy).text
+    comment_count = len(json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment']['edges'])
 
+    if limit > comment_count:
+        limit = comment_count
+
+    for i in range(0, limit):
+        usernames.append(
+            json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment']['edges'][i]['node'][
+                'owner']['username'])
+
+    if limit_k > 50:
+        limit = limit_k - 50
         limit_k = limit
-        headers = self._get_headers()
+        while limit_k > 0:
+            try:
+                response = self.session.get(
+                    'https://www.instagram.com/graphql/query/?query_hash=bc3296d1ce80a24b1b6e40b1e72903f5&variables={%22shortcode%22:%22' + shortcode + '%22,%22first%22:50,%22after%22:' + json.dumps(
+                        json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment'][
+                            'page_info']['end_cursor']) + '}', headers=headers, proxies=self.proxy).text
+                comment_count = len(
+                    json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment']['edges'])
 
-        shortcode = post_link.split('/p/')[1].replace('/', '')
+                if limit > comment_count:
+                    limit = comment_count
 
-        usernames = []
+                limit_k -= limit
+                for i in range(0, limit):
+                    usernames.append(
+                        json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment']['edges'][i][
+                            'node']['owner']['username'])
+                limit = limit_k
+            except:
+                break
+    return usernames
 
-        response = self.session.get(
-            f'https://www.instagram.com/graphql/query/?query_hash=bc3296d1ce80a24b1b6e40b1e72903f5&variables=%7B%22shortcode%22%3A%22{shortcode}%22%2C%22first%22%3A{limit}%7D',
-            headers=headers, proxies=self.proxy).text
-        comment_count = len(json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment']['edges'])
 
-        if limit > comment_count:
-            limit = comment_count
+def feed_posts(self):
+    headers = self._get_headers()
+    response = self.session.get(
+        'https://www.instagram.com/graphql/query/?query_hash=c699b185975935ae2a457f24075de8c7', headers=headers,
+        proxies=self.proxy).text
 
-        for i in range(0, limit):
-            usernames.append(
-                json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment']['edges'][i]['node'][
-                    'owner']['username'])
+    post_count = len(json.loads(response)['data']['user']['edge_web_feed_timeline']['edges'])
+    feed_posts = []
+    for i in range(0, post_count):
+        feed_posts.append('https://instagram.com/p/' +
+                          json.loads(response)['data']['user']['edge_web_feed_timeline']['edges'][i]['node'][
+                              'shortcode'])
 
-        if limit_k > 50:
-            limit = limit_k - 50
-            limit_k = limit
-            while limit_k > 0:
-                try:
-                    response = self.session.get(
-                        'https://www.instagram.com/graphql/query/?query_hash=bc3296d1ce80a24b1b6e40b1e72903f5&variables={%22shortcode%22:%22' + shortcode + '%22,%22first%22:50,%22after%22:' + json.dumps(
-                            json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment'][
-                                'page_info']['end_cursor']) + '}', headers=headers, proxies=self.proxy).text
-                    comment_count = len(
-                        json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment']['edges'])
+    return feed_posts
 
-                    if limit > comment_count:
-                        limit = comment_count
 
-                    limit_k -= limit
-                    for i in range(0, limit):
-                        usernames.append(
-                            json.loads(response)['data']['shortcode_media']['edge_media_to_parent_comment']['edges'][i][
-                                'node']['owner']['username'])
-                    limit = limit_k
-                except:
-                    break
-        return usernames
+def post_owner(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    headers = self._get_headers()
 
-    def feed_posts(self):
-        headers = self._get_headers()
-        response = self.session.get(
-            'https://www.instagram.com/graphql/query/?query_hash=c699b185975935ae2a457f24075de8c7', headers=headers,
-            proxies=self.proxy).text
+    if post_link[-1] == '/':
+        post_link = post_link[:-1]
 
-        post_count = len(json.loads(response)['data']['user']['edge_web_feed_timeline']['edges'])
-        feed_posts = []
-        for i in range(0, post_count):
-            feed_posts.append('https://instagram.com/p/' +
-                              json.loads(response)['data']['user']['edge_web_feed_timeline']['edges'][i]['node'][
-                                  'shortcode'])
+    response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
+    owner = json.loads(response)['graphql']['shortcode_media']['owner']['username']
 
-        return feed_posts
+    return owner
 
-    def post_owner(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        headers = self._get_headers()
 
-        if post_link[-1] == '/':
-            post_link = post_link[:-1]
+def post_caption(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    headers = self._get_headers()
 
+    if post_link[-1] == '/':
+        post_link = post_link[:-1]
+
+    response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
+    caption = json.loads(response)['graphql']['shortcode_media']['edge_media_to_caption']['edges'][0]['node'][
+        'text']
+
+    return caption
+
+
+def post_location(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    headers = self._get_headers()
+
+    if post_link[-1] == '/':
+        post_link = post_link[:-1]
+
+    response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
+    location = {"id": json.loads(response)['graphql']['shortcode_media']['location']['id'],
+                "name": json.loads(response)['graphql']['shortcode_media']['location']['name']}
+
+    return location
+
+
+def post_hashtags(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    hashtag_filter = self.post_caption(post_link).replace('\n', ' ').split()
+    hashtags = []
+    for hashtag in hashtag_filter:
+        if hashtag.startswith('#'):
+            hashtags.append(hashtag)
+
+    return hashtags
+
+
+def post_tagged_user(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    headers = self._get_headers()
+
+    if post_link[-1] == '/':
+        post_link = post_link[:-1]
+
+    tagged_users = []
+    try:
         response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-        owner = json.loads(response)['graphql']['shortcode_media']['owner']['username']
+        tag_count = len(
+            json.loads(response)['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'][0]['node'][
+                'edge_media_to_tagged_user']['edges'])
 
-        return owner
-
-    def post_caption(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        headers = self._get_headers()
-
-        if post_link[-1] == '/':
-            post_link = post_link[:-1]
-
-        response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-        caption = json.loads(response)['graphql']['shortcode_media']['edge_media_to_caption']['edges'][0]['node'][
-            'text']
-
-        return caption
-
-    def post_location(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        headers = self._get_headers()
-
-        if post_link[-1] == '/':
-            post_link = post_link[:-1]
-
-        response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-        location = {"id": json.loads(response)['graphql']['shortcode_media']['location']['id'],
-                    "name": json.loads(response)['graphql']['shortcode_media']['location']['name']}
-
-        return location
-
-    def post_hashtags(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        hashtag_filter = self.post_caption(post_link).replace('\n', ' ').split()
-        hashtags = []
-        for hashtag in hashtag_filter:
-            if hashtag.startswith('#'):
-                hashtags.append(hashtag)
-
-        return hashtags
-
-    def post_tagged_user(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        headers = self._get_headers()
-
-        if post_link[-1] == '/':
-            post_link = post_link[:-1]
-
-        tagged_users = []
+        for i in range(0, tag_count):
+            tagged_users.append(
+                json.loads(response)['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'][0]['node'][
+                    'edge_media_to_tagged_user']['edges'][i]['node']['user']['username'])
+    except:
         try:
             response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
             tag_count = len(
-                json.loads(response)['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'][0]['node'][
-                    'edge_media_to_tagged_user']['edges'])
+                json.loads(response)['graphql']['shortcode_media']['edge_media_to_tagged_user']['edges'])
 
             for i in range(0, tag_count):
                 tagged_users.append(
-                    json.loads(response)['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'][0]['node'][
-                        'edge_media_to_tagged_user']['edges'][i]['node']['user']['username'])
-        except:
-            try:
-                response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-                tag_count = len(
-                    json.loads(response)['graphql']['shortcode_media']['edge_media_to_tagged_user']['edges'])
-
-                for i in range(0, tag_count):
-                    tagged_users.append(
-                        json.loads(response)['graphql']['shortcode_media']['edge_media_to_tagged_user']['edges'][i][
-                            'node']['user']['username'])
-            except:
-                pass
-
-        return tagged_users
-
-    def post_time(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+                    json.loads(response)['graphql']['shortcode_media']['edge_media_to_tagged_user']['edges'][i][
+                        'node']['user']['username'])
         except:
             pass
+
+    return tagged_users
+
+
+def post_time(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    headers = self._get_headers()
+
+    if post_link[-1] == '/':
+        post_link = post_link[:-1]
+
+    response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
+    time = {"timestamp": json.loads(response)['graphql']['shortcode_media']['taken_at_timestamp'], "datetime": str(
+        datetime.fromtimestamp(json.loads(response)['graphql']['shortcode_media']['taken_at_timestamp']))}
+
+    return time
+
+
+def post_type(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    headers = self._get_headers()
+
+    if post_link[-1] == '/':
+        post_link = post_link[:-1]
+
+    response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
+    if bool(json.loads(response)['graphql']['shortcode_media']['is_video']):
+        post_type = 'video'
+    else:
+        post_type = 'picture'
+
+    return post_type
+
+
+def video_views_count(self, post_link):
+    if post_link.find('/tv/') != -1:
+        post_link = post_link.replace('/tv/', '/p/')
+    try:
+        post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
+    except:
+        pass
+    if self.post_type(post_link) == 'video':
         headers = self._get_headers()
 
         if post_link[-1] == '/':
             post_link = post_link[:-1]
 
         response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-        time = {"timestamp": json.loads(response)['graphql']['shortcode_media']['taken_at_timestamp'], "datetime": str(
-            datetime.fromtimestamp(json.loads(response)['graphql']['shortcode_media']['taken_at_timestamp']))}
+        view_count = json.loads(response)['graphql']['shortcode_media']['video_view_count']
 
-        return time
+        return view_count
 
-    def post_type(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        headers = self._get_headers()
 
-        if post_link[-1] == '/':
-            post_link = post_link[:-1]
+def followed_by_me(self, username):
+    headers = self._get_headers()
 
-        response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-        if bool(json.loads(response)['graphql']['shortcode_media']['is_video']):
-            post_type = 'video'
-        else:
-            post_type = 'picture'
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    followed_by_viewer = bool(json.loads(response)['graphql']['user']['followed_by_viewer'])
 
-        return post_type
+    return followed_by_viewer
 
-    def video_views_count(self, post_link):
-        if post_link.find('/tv/') != -1:
-            post_link = post_link.replace('/tv/', '/p/')
-        try:
-            post_link = post_link.replace(post_link.split('/p/')[1].split('/')[1], '')
-        except:
-            pass
-        if self.post_type(post_link) == 'video':
-            headers = self._get_headers()
 
-            if post_link[-1] == '/':
-                post_link = post_link[:-1]
+def follows_me(self, username):
+    headers = self._get_headers()
 
-            response = self.session.get(f'{post_link}/?__a=1', headers=headers, proxies=self.proxy).text
-            view_count = json.loads(response)['graphql']['shortcode_media']['video_view_count']
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    follows_viewer = bool(json.loads(response)['graphql']['user']['follows_viewer'])
 
-            return view_count
+    return follows_viewer
 
-    def followed_by_me(self, username):
-        headers = self._get_headers()
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        followed_by_viewer = bool(json.loads(response)['graphql']['user']['followed_by_viewer'])
+def user_external_url(self, username):
+    headers = self._get_headers()
 
-        return followed_by_viewer
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    url = json.loads(response)['graphql']['user']['external_url']
 
-    def follows_me(self, username):
-        headers = self._get_headers()
+    return url
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        follows_viewer = bool(json.loads(response)['graphql']['user']['follows_viewer'])
 
-        return follows_viewer
+def verified_user(self, username):
+    headers = self._get_headers()
 
-    def user_external_url(self, username):
-        headers = self._get_headers()
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    is_verified = bool(json.loads(response)['graphql']['user']['is_verified'])
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        url = json.loads(response)['graphql']['user']['external_url']
+    return is_verified
 
-        return url
 
-    def verified_user(self, username):
-        headers = self._get_headers()
+def private_user(self, username):
+    headers = self._get_headers()
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        is_verified = bool(json.loads(response)['graphql']['user']['is_verified'])
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    is_private = bool(json.loads(response)['graphql']['user']['is_private'])
 
-        return is_verified
+    return is_private
 
-    def private_user(self, username):
-        headers = self._get_headers()
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        is_private = bool(json.loads(response)['graphql']['user']['is_private'])
+def user_bio(self, username):
+    headers = self._get_headers()
 
-        return is_private
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    bio = json.loads(response)['graphql']['user']['biography']
 
-    def user_bio(self, username):
-        headers = self._get_headers()
+    return bio
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        bio = json.loads(response)['graphql']['user']['biography']
 
-        return bio
+def user_dp(self, username):
+    headers = self._get_headers()
 
-    def user_dp(self, username):
-        headers = self._get_headers()
+    response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
+                                proxies=self.proxy).text
+    dp_url = json.loads(response)['graphql']['user']['profile_pic_url_hd']
 
-        response = self.session.get(f'https://www.instagram.com/{username}/?__a=1', headers=headers,
-                                    proxies=self.proxy).text
-        dp_url = json.loads(response)['graphql']['user']['profile_pic_url_hd']
+    return dp_url
 
-        return dp_url
 
-    def _get_headers(self, options=None):
-        if options is None:
-            options = dict()
+def _get_headers(self, options=None):
+    if options is None:
+        options = dict()
 
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "content-length": "0",
-            "content-type": "application/x-www-form-urlencoded",
-            "cookie": self.cookie,
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-            "x-csrftoken": self.csrf_token,
-            "x-ig-app-id": "936619743392459",
-            "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
-            "x-instagram-ajax": "d3d3aea32e75",
-            "x-requested-with": "XMLHttpRequest"
-        }
+    headers = {
+        "accept": "*/*",
+        "accept-encoding": "gzip, deflate, br",
+        "accept-language": "en-US,en;q=0.9",
+        "content-length": "0",
+        "content-type": "application/x-www-form-urlencoded",
+        "cookie": self.cookie,
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
+        "x-csrftoken": self.csrf_token,
+        "x-ig-app-id": "936619743392459",
+        "x-ig-www-claim": "hmac.AR3dC7naiVtTKkwrEY0hwTO9zj4kLxfvf4Srvp3wFyoZFqSx",
+        "x-instagram-ajax": "d3d3aea32e75",
+        "x-requested-with": "XMLHttpRequest"
+    }
 
-        for key, value in options.items():
-            headers[key] = value
+    for key, value in options.items():
+        headers[key] = value
 
-        return headers
+    return headers
